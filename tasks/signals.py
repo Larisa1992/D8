@@ -9,18 +9,6 @@ def task_cats_added(sender, instance, action, model, **kwargs):
     if action != "post_add":
         return
 
-    for cat in instance.category.all():
-        slug = cat.slug
-        cnt = cat.todos_count
-        print(f"action {action} cat.name {cat.name}")
-        
-        new_count = 0
-        for task in TodoItem.objects.all():
-            new_count += task.category.filter(slug=slug).count()
-        Category.objects.filter(slug=slug).update(todos_count=new_count) 
-
-    for cat in Category.objects.all():
-        print(f"cat.name {cat.name} cat.todos_count {cat.todos_count}")
     # полный пересчет, код скопирован из post_remove
     cat_counter = Counter()
     for t in TodoItem.objects.all():
@@ -28,7 +16,16 @@ def task_cats_added(sender, instance, action, model, **kwargs):
             cat_counter[cat.slug] += 1
 
     for slug, new_count in cat_counter.items():
+        # print(f"slug {slug} new_count {new_count}")
         Category.objects.filter(slug=slug).update(todos_count=new_count)
+    
+    # for slug in cat_counter.keys():
+    #     print(f"slug {slug}")
+# если по категории нет ни одной задачи, то обновляем и проставляем к-во нуль
+    for cat in Category.objects.all():
+        if cat.slug not in cat_counter.keys():              
+            # print(f"set 0 for {cat.slug}")
+            Category.objects.filter(slug=cat.slug).update(todos_count=0)
 
 @receiver(m2m_changed, sender=TodoItem.category.through)
 def task_cats_removed(sender, instance, action, model, **kwargs):
