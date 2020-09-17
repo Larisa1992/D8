@@ -1,8 +1,9 @@
 from django.db.models.signals import m2m_changed
+from django.db.models.signals import post_save
 from django.dispatch import receiver
-from tasks.models import TodoItem, Category
+from tasks.models import TodoItem, Category, Priority
 from collections import Counter
-
+from django.db.models import Count
 
 @receiver(m2m_changed, sender=TodoItem.category.through)
 def task_cats_added(sender, instance, action, model, **kwargs):
@@ -16,7 +17,7 @@ def task_cats_added(sender, instance, action, model, **kwargs):
             cat_counter[cat.slug] += 1
 
     for slug, new_count in cat_counter.items():
-        # print(f"slug {slug} new_count {new_count}")
+        print(f"action {action} slug {slug} new_count {new_count}")
         Category.objects.filter(slug=slug).update(todos_count=new_count)
     
     # for slug in cat_counter.keys():
@@ -41,3 +42,14 @@ def task_cats_removed(sender, instance, action, model, **kwargs):
         Category.objects.filter(slug=slug).update(todos_count=new_count)
 
     print(f"action {action}")
+
+# счетчик приоритетов задач
+@receiver(post_save, sender=TodoItem)
+def post_save_task( sender, instance, **kwargs):
+    all_pr = Priority.objects.annotate(num=Count('cl_priority'))
+    for pr in all_pr:
+        Priority.objects.filter(pk=pr.pk).update(priority_count=pr.num)
+
+    for key, val in kwargs.items():
+        print(f'{key}: {val}')
+    print(sender)

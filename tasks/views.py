@@ -1,8 +1,10 @@
 from django.shortcuts import get_object_or_404, render
 from django.views.generic import ListView
 from django.views.generic.detail import DetailView
-from tasks.models import TodoItem, Category
-
+from tasks.models import TodoItem, Category, Priority
+from django.views.decorators.cache import cache_page
+from datetime import datetime
+from django.http import HttpResponse
 
 def index(request):
 
@@ -14,13 +16,16 @@ def index(request):
     # for t in Tag.objects.all()}
 
     # 3rd version
-    from django.db.models import Count
+    # from django.db.models import Count
 
     # counts = Category.objects.annotate(total_tasks=Count('todoitem')).order_by("-total_tasks")
     # counts = {c.name: c.total_tasks for c in counts}
     counts = Category.objects.all().order_by("-todos_count")
     counts = {c.name: c.todos_count for c in counts}
-    return render(request, "tasks/index.html", {"counts": counts})
+
+    priorities = Priority.objects.all()
+    priorities = {p.get_priority_lvl_display() : p.priority_count for p in priorities}
+    return render(request, "tasks/index.html", {"counts": counts, "priorities": priorities})
 
 
 def filter_tasks(tags_by_task):
@@ -79,3 +84,9 @@ class TaskListView(ListView):
 class TaskDetailsView(DetailView):
     model = TodoItem
     template_name = "tasks/details.html"
+
+@cache_page(300)
+def datetime_cache(request):
+    dttm = datetime.now().strftime("%Y-%m-%d-%H.%M.%S")
+    print(dttm)
+    return HttpResponse(dttm)
