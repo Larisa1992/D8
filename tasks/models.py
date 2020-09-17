@@ -36,16 +36,6 @@ class Priority(models.Model):
         return f'{self.priority_lvl}'
 
 class TodoItem(models.Model):
-        
-    PRIORITY_HIGH = 1
-    PRIORITY_MEDIUM = 2
-    PRIORITY_LOW = 3
-
-    PRIORITY_CHOICES = [
-        (PRIORITY_HIGH, "Высокий приоритет"),
-        (PRIORITY_MEDIUM, "Средний приоритет"),
-        (PRIORITY_LOW, "Низкий приоритет"),
-    ]
 
     description = models.TextField("описание")
     is_completed = models.BooleanField("выполнено", default=False)
@@ -54,9 +44,7 @@ class TodoItem(models.Model):
     owner = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="tasks"
     )
-    priority = models.IntegerField(
-        "Приоритет", choices=PRIORITY_CHOICES, default=PRIORITY_MEDIUM
-    )
+
     category = models.ManyToManyField(Category, blank=True)
     cl_priority = models.ForeignKey(Priority, verbose_name="Класс приоритета"
                                     , on_delete=models.SET_NULL, related_name="cl_priority"

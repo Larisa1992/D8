@@ -17,15 +17,11 @@ def task_cats_added(sender, instance, action, model, **kwargs):
             cat_counter[cat.slug] += 1
 
     for slug, new_count in cat_counter.items():
-        print(f"action {action} slug {slug} new_count {new_count}")
         Category.objects.filter(slug=slug).update(todos_count=new_count)
     
-    # for slug in cat_counter.keys():
-    #     print(f"slug {slug}")
 # если по категории нет ни одной задачи, то обновляем и проставляем к-во нуль
     for cat in Category.objects.all():
         if cat.slug not in cat_counter.keys():              
-            # print(f"set 0 for {cat.slug}")
             Category.objects.filter(slug=cat.slug).update(todos_count=0)
 
 @receiver(m2m_changed, sender=TodoItem.category.through)
@@ -41,15 +37,9 @@ def task_cats_removed(sender, instance, action, model, **kwargs):
     for slug, new_count in cat_counter.items():
         Category.objects.filter(slug=slug).update(todos_count=new_count)
 
-    print(f"action {action}")
-
 # счетчик приоритетов задач
 @receiver(post_save, sender=TodoItem)
 def post_save_task( sender, instance, **kwargs):
     all_pr = Priority.objects.annotate(num=Count('cl_priority'))
     for pr in all_pr:
         Priority.objects.filter(pk=pr.pk).update(priority_count=pr.num)
-
-    for key, val in kwargs.items():
-        print(f'{key}: {val}')
-    print(sender)
