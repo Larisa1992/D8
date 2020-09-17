@@ -1,1 +1,7 @@
-# Example todoapp project
+HW-D8 
+Memcached and signals
+
+Добавлена модель Приоритетов и выведен счетчик приоритетов по пути "/index"
+Логин администратора pws_admin, пароль администратора sf_password.
+
+Кэширование реализовано для страницы по пути "/datetime_cache"
